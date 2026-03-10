@@ -75,6 +75,7 @@ export interface WorkoutState {
   readonly sessionId: string;
   readonly sessionStartedAt: number;
   readonly completedSession: WorkoutSession | null;
+  readonly audioSignal: number;
 }
 
 // ── Session & History (persistence) ──────────────────────────────

@@ -33,6 +33,7 @@ export function createInitialState(template: WorkoutTemplate): WorkoutState {
     sessionId: '',
     sessionStartedAt: 0,
     completedSession: null,
+    audioSignal: 0,
   };
 }
 
@@ -122,10 +123,11 @@ function enterRest(state: WorkoutState, restDuration: number): WorkoutState {
 }
 
 function handleTimerExpire(state: WorkoutState): WorkoutState {
+  const withSignal = { ...state, audioSignal: state.audioSignal + 1 };
   switch (state.screen) {
-    case 'countdown': return enterActive(state);
-    case 'active':    return enterFeedback(state);
-    case 'rest':      return enterActive(state);
+    case 'countdown': return enterActive(withSignal);
+    case 'active':    return enterFeedback(withSignal);
+    case 'rest':      return enterActive(withSignal);
     default:          return state;
   }
 }
@@ -152,6 +154,7 @@ export function workoutReducer(
         earlyStoppedExercises: [],
         currentSetResult: null,
         completedSession: null,
+        audioSignal: 0,
         timer: { secondsRemaining: 3, isRunning: true },
         sessionId: generateId(),
         sessionStartedAt: now,

@@ -1,5 +1,6 @@
 import { WorkoutContext, useWorkoutReducer } from './hooks/useWorkout';
 import { useTimer } from './hooks/useTimer';
+import { useAudioCue } from './hooks/useAudioCue';
 import { usePersistence } from './hooks/usePersistence';
 import { localStorageAdapter } from './storage/localStorage';
 import { WelcomeScreen } from './screens/WelcomeScreen';
@@ -13,8 +14,9 @@ import { SummaryScreen } from './screens/SummaryScreen';
 
 function WorkoutApp() {
   const { state, dispatch, savedSession } = useWorkoutReducer(localStorageAdapter);
+  const playBeep = useAudioCue();
 
-  useTimer(state, dispatch);
+  useTimer(state, dispatch, playBeep);
   usePersistence(state, localStorageAdapter);
 
   const screenComponent = () => {
