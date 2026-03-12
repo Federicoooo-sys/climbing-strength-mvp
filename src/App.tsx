@@ -2,6 +2,7 @@ import { WorkoutContext, useWorkoutReducer } from './hooks/useWorkout';
 import { useTimer } from './hooks/useTimer';
 import { useAudioCue } from './hooks/useAudioCue';
 import { usePersistence } from './hooks/usePersistence';
+import { useVisibilityPause } from './hooks/useVisibilityPause';
 import { localStorageAdapter } from './storage/localStorage';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 import { CountdownScreen } from './screens/CountdownScreen';
@@ -17,6 +18,7 @@ function WorkoutApp() {
   const playBeep = useAudioCue();
 
   useTimer(state, dispatch, playBeep);
+  useVisibilityPause(state, dispatch);
   usePersistence(state, localStorageAdapter);
 
   const screenComponent = () => {

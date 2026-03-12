@@ -434,5 +434,15 @@ export function workoutReducer(
   }
 }
 
+/** Total number of sets across all exercises in the workout. */
+function totalWorkoutSets(state: WorkoutState): number {
+  return state.template.exercises.reduce((sum, e) => sum + e.sets, 0);
+}
+
+/** Number of sets completed so far (based on recorded results). */
+function completedWorkoutSets(state: WorkoutState): number {
+  return state.setResults.length;
+}
+
 // Re-export helpers for use in hooks/screens
-export { currentExercise, isLastSetOfExercise, isLastExercise };
+export { currentExercise, isLastSetOfExercise, isLastExercise, totalWorkoutSets, completedWorkoutSets };

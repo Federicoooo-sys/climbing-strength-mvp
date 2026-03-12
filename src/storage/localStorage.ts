@@ -1,4 +1,5 @@
 import type { StorageAdapter, WorkoutState, WorkoutSession, WorkoutHistory } from '../types/workout';
+import { isValidWorkoutState, isValidWorkoutHistory } from './validation';
 
 const SESSION_KEY = 'workout-session';
 const HISTORY_KEY = 'workout-history';
@@ -9,8 +10,17 @@ export const localStorageAdapter: StorageAdapter = {
   loadSession(): WorkoutState | null {
     try {
       const raw = localStorage.getItem(SESSION_KEY);
-      return raw ? (JSON.parse(raw) as WorkoutState) : null;
+      if (!raw) return null;
+
+      const parsed: unknown = JSON.parse(raw);
+      if (!isValidWorkoutState(parsed)) {
+        // Corrupt or stale data — discard it
+        localStorage.removeItem(SESSION_KEY);
+        return null;
+      }
+      return parsed;
     } catch {
+      localStorage.removeItem(SESSION_KEY);
       return null;
     }
   },
@@ -30,7 +40,14 @@ export const localStorageAdapter: StorageAdapter = {
   loadHistory(): WorkoutHistory {
     try {
       const raw = localStorage.getItem(HISTORY_KEY);
-      return raw ? (JSON.parse(raw) as WorkoutHistory) : EMPTY_HISTORY;
+      if (!raw) return EMPTY_HISTORY;
+
+      const parsed: unknown = JSON.parse(raw);
+      if (!isValidWorkoutHistory(parsed)) {
+        // Corrupt history — start fresh rather than lose new data
+        return EMPTY_HISTORY;
+      }
+      return parsed;
     } catch {
       return EMPTY_HISTORY;
     }

@@ -61,3 +61,16 @@ Mobile-first web MVP for an adaptive upper-body strength assessment workout app.
 - Keep storage logic isolated from UI
 - Keep implementation practical and MVP-level
 - Do not over-engineer styling yet
+
+## Collaboration Style
+Use first-principles thinking. Do not assume I always know the exact best solution, implementation path, or technical tradeoffs. Start from the underlying goal and constraints. If my goal or motivation is unclear, stop and ask clarifying questions before implementing. If my goal is clear but my proposed approach is inefficient, overly complex, or likely to cause problems later, explain why and suggest a better path before proceeding. Prefer the simplest approach that satisfies the real requirement.
+
+## Explanation Style
+Assume I am new to software development. After meaningful code changes, explain in plain English:
+- what you changed
+- why you changed it
+- how it works at a high level
+- which files matter most
+- any risks, shortcuts, or future improvements
+
+Avoid unnecessary jargon. If you use a technical term, define it briefly.
