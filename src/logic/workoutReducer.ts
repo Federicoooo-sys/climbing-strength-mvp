@@ -132,6 +132,20 @@ function handleTimerExpire(state: WorkoutState): WorkoutState {
   }
 }
 
+/**
+ * Same screen transitions as handleTimerExpire but does NOT bump
+ * audioSignal. Used when a timer expired while the app was closed —
+ * playing a beep for something that happened minutes ago is wrong.
+ */
+function handleTimerExpireOnResume(state: WorkoutState): WorkoutState {
+  switch (state.screen) {
+    case 'countdown': return enterActive(state);
+    case 'active':    return enterFeedback(state);
+    case 'rest':      return enterActive(state);
+    default:          return state;
+  }
+}
+
 // ── Reducer ──────────────────────────────────────────────────────
 
 export function workoutReducer(
@@ -167,10 +181,21 @@ export function workoutReducer(
     case 'RESUME_WORKOUT': {
       const { savedState, now: resumeNow } = action.payload;
 
-      if (savedState.pausedAt !== null || !savedState.timer.isRunning) {
+      // Paused state on a timed screen (active/rest): restore with
+      // timer frozen. Keep pausedAt so the UI shows the Resume button.
+      if (savedState.pausedAt !== null && savedState.timer.isRunning === false
+          && (savedState.screen === 'active' || savedState.screen === 'rest')) {
         return { ...savedState, lastSavedAt: resumeNow };
       }
 
+      // Screens with no running timer (feedback, earlyStop, etc.)
+      // restore exactly as-is. Clear pausedAt since there's nothing
+      // to unpause — it may be stale from a prior active screen.
+      if (!savedState.timer.isRunning) {
+        return { ...savedState, pausedAt: null, lastSavedAt: resumeNow };
+      }
+
+      // Running timer: adjust for real time elapsed while away.
       const adjusted = computeResumeTimer(
         savedState.timer.secondsRemaining,
         savedState.lastSavedAt,
@@ -185,7 +210,9 @@ export function workoutReducer(
         };
       }
 
-      return handleTimerExpire({
+      // Timer fully expired while away — trigger the transition
+      // but don't bump audioSignal (no beep for stale expiry).
+      return handleTimerExpireOnResume({
         ...savedState,
         timer: { secondsRemaining: 0, isRunning: false },
         lastSavedAt: resumeNow,
