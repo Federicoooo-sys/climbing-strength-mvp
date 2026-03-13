@@ -74,6 +74,7 @@ function enterFeedback(state: WorkoutState): WorkoutState {
     ...state,
     screen: 'feedback',
     timer: { secondsRemaining: 0, isRunning: false },
+    pausedAt: null,
     feedbackStep: 'completed',
     currentSetResult: {
       exerciseId: exercise.id,
@@ -97,6 +98,7 @@ function enterActive(state: WorkoutState): WorkoutState {
     ...state,
     screen: 'active',
     timer: { secondsRemaining: duration, isRunning: true },
+    pausedAt: null,
     lastSavedAt: Date.now(),
   };
 }
@@ -117,6 +119,7 @@ function enterRest(state: WorkoutState, restDuration: number): WorkoutState {
     ...state,
     screen: 'rest',
     timer: { secondsRemaining: restDuration, isRunning: true },
+    pausedAt: null,
     currentSetResult: null,
     lastSavedAt: Date.now(),
   };
@@ -362,7 +365,7 @@ export function workoutReducer(
 
     // ── Rest skip (−15s per tap) ───────────────────────────────
     case 'SKIP_REST': {
-      if (state.screen !== 'rest') return state;
+      if (state.screen !== 'rest' || state.pausedAt !== null) return state;
       const remaining = Math.max(0, state.timer.secondsRemaining - 15);
       if (remaining <= 0) {
         return enterActive(state);

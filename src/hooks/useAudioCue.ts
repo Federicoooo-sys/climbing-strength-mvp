@@ -13,6 +13,13 @@ export function useAudioCue() {
         ctxRef.current = new AudioContext();
       }
       const ctx = ctxRef.current;
+
+      // Browsers suspend AudioContext until a user gesture.
+      // Resume it if needed — this is a no-op if already running.
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);

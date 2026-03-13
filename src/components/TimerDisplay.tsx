@@ -5,8 +5,9 @@ interface TimerDisplayProps {
 }
 
 export function TimerDisplay({ seconds, label, urgent }: TimerDisplayProps) {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  const clamped = Math.max(0, seconds);
+  const mins = Math.floor(clamped / 60);
+  const secs = clamped % 60;
   const display = mins > 0
     ? `${mins}:${secs.toString().padStart(2, '0')}`
     : `${secs}`;

@@ -21,7 +21,7 @@ function renderWithState(
   dispatch: React.Dispatch<WorkoutAction> = () => {},
 ) {
   return render(
-    <WorkoutContext value={{ state, dispatch, savedSession: null }}>
+    <WorkoutContext value={{ state, dispatch, savedSession: null, storage: localStorageAdapter }}>
       {ui}
     </WorkoutContext>,
   );

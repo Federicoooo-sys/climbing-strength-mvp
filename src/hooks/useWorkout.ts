@@ -9,6 +9,7 @@ interface WorkoutContextValue {
   state: WorkoutState;
   dispatch: React.Dispatch<WorkoutAction>;
   savedSession: WorkoutState | null;
+  storage: StorageAdapter;
 }
 
 export const WorkoutContext = createContext<WorkoutContextValue | null>(null);
@@ -21,7 +22,7 @@ export function useWorkoutReducer(storage: StorageAdapter) {
   // Check for a saved session to offer resume
   const savedSession = state.screen === 'welcome' ? storage.loadSession() : null;
 
-  return { state, dispatch, savedSession };
+  return { state, dispatch, savedSession, storage };
 }
 
 export function useWorkout(): WorkoutContextValue {

@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { WorkoutContext } from '../../hooks/useWorkout';
 import { workoutReducer, createInitialState } from '../../logic/workoutReducer';
 import { MVP_WORKOUT } from '../../data/exercises';
+import { localStorageAdapter } from '../../storage/localStorage';
 import { WelcomeScreen } from '../WelcomeScreen';
 import { CountdownScreen } from '../CountdownScreen';
 import { ActiveScreen } from '../ActiveScreen';
@@ -17,7 +18,7 @@ function renderWithState(
   savedSession: WorkoutState | null = null,
 ) {
   return render(
-    <WorkoutContext value={{ state, dispatch, savedSession }}>
+    <WorkoutContext value={{ state, dispatch, savedSession, storage: localStorageAdapter }}>
       {ui}
     </WorkoutContext>,
   );

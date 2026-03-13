@@ -14,7 +14,7 @@ import { CongratsScreen } from './screens/CongratsScreen';
 import { SummaryScreen } from './screens/SummaryScreen';
 
 function WorkoutApp() {
-  const { state, dispatch, savedSession } = useWorkoutReducer(localStorageAdapter);
+  const { state, dispatch, savedSession, storage } = useWorkoutReducer(localStorageAdapter);
   const playBeep = useAudioCue();
 
   useTimer(state, dispatch, playBeep);
@@ -35,7 +35,7 @@ function WorkoutApp() {
   };
 
   return (
-    <WorkoutContext value={{ state, dispatch, savedSession }}>
+    <WorkoutContext value={{ state, dispatch, savedSession, storage }}>
       <div style={{ maxWidth: 480, margin: '0 auto', padding: 16 }}>
         {screenComponent()}
       </div>

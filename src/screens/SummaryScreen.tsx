@@ -1,18 +1,17 @@
 import { useMemo } from 'react';
 import { useWorkout } from '../hooks/useWorkout';
-import { localStorageAdapter } from '../storage/localStorage';
 import { buildSummary } from '../logic/summary';
 
 export function SummaryScreen() {
-  const { state, dispatch } = useWorkout();
+  const { state, dispatch, storage } = useWorkout();
 
   const summaries = useMemo(() => {
-    const history = localStorageAdapter.loadHistory();
+    const history = storage.loadHistory();
     const nameMap = new Map(
       state.template.exercises.map((e) => [e.id, e.name]),
     );
     return buildSummary(history, nameMap);
-  }, [state.template.exercises]);
+  }, [state.template.exercises, storage]);
 
   return (
     <div>
