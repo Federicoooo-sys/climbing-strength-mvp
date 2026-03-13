@@ -181,15 +181,14 @@ describe('FeedbackScreen — duration exercises', () => {
     return state;
   }
 
-  it('asks for seconds when duration exercise is not completed', () => {
-    let state = getToDeadHangsFeedback();
-    state = workoutReducer(state, {
-      type: 'ADVANCE_FEEDBACK',
-      payload: { completed: false },
-    });
+  it('shows intensity directly when duration timer expires (auto-complete)', () => {
+    const state = getToDeadHangsFeedback();
 
+    // Timer expiry for duration exercises skips "Did you complete?" and goes
+    // straight to intensity since the full target was reached.
+    expect(state.feedbackStep).toBe('intensity');
     renderWithState(<FeedbackScreen />, state);
-    expect(screen.getByText(/How many seconds did you complete/)).toBeTruthy();
+    expect(screen.getByText(/How hard was that/)).toBeTruthy();
   });
 });
 

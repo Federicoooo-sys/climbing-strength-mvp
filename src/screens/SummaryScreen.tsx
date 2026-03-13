@@ -7,10 +7,10 @@ export function SummaryScreen() {
 
   const summaries = useMemo(() => {
     const history = storage.loadHistory();
-    const nameMap = new Map(
-      state.template.exercises.map((e) => [e.id, e.name]),
+    const infoMap = new Map(
+      state.template.exercises.map((e) => [e.id, { name: e.name, type: e.type }]),
     );
-    return buildSummary(history, nameMap);
+    return buildSummary(history, infoMap);
   }, [state.template.exercises, storage]);
 
   return (
@@ -35,6 +35,15 @@ export function SummaryScreen() {
               <div style={{ fontSize: 14, color: '#666' }}>
                 Sessions: {s.completionCount} &middot;{' '}
                 Sets: {s.totalSetsCompleted} / {s.totalSetsAttempted} completed
+                {s.durationSets.length > 0 && (
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '6px 0 0' }}>
+                    {s.durationSets.map((d, i) => (
+                      <li key={i} style={{ fontSize: 13, color: '#888' }}>
+                        Set {i + 1}: {d.actual} / {d.target} seconds
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </li>
           ))}

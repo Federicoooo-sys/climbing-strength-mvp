@@ -40,6 +40,11 @@ export function ActiveScreen() {
               Done
             </button>
           )}
+          {exercise.type === 'duration' && (
+            <button onClick={() => dispatch({ type: 'END_DURATION_SET' })}>
+              End this set
+            </button>
+          )}
 
           <PauseResumeButton />
         </div>

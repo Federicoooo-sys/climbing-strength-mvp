@@ -288,15 +288,15 @@ describe('Continuing after declining early-stop', () => {
       }
     }
 
-    // Now on dead hangs — tick through active timer
+    // Now on dead hangs — tick through countdown to active
     expect(state.exerciseIndex).toBe(2);
-    while (state.screen === 'active') {
+    while (state.screen === 'countdown') {
       state = workoutReducer(state, { type: 'TIMER_TICK' });
     }
+    expect(state.screen).toBe('active');
 
-    // Fail dead hangs set 1
-    state = reduce(state, { type: 'ADVANCE_FEEDBACK', payload: { completed: false } });
-    state = reduce(state, { type: 'SUBMIT_FEEDBACK', payload: { value: 0 } });
+    // Fail dead hangs set 1 by ending immediately (0 elapsed seconds)
+    state = workoutReducer(state, { type: 'END_DURATION_SET' });
     expect(state.screen).toBe('earlyStop');
 
     // Accept → last exercise, so workout complete

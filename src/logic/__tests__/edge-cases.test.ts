@@ -354,19 +354,15 @@ describe('Early-stop skip (accept) path', () => {
       state = reduce(state, { type: 'SUBMIT_FEEDBACK', payload: { value: 5 } });
     }
 
-    // Now on dead hangs (last exercise) — tick to active
-    while (state.screen === 'rest') {
+    // Now on dead hangs (last exercise) — tick through rest and countdown
+    while (state.screen === 'rest' || state.screen === 'countdown') {
       state = workoutReducer(state, { type: 'TIMER_TICK' });
     }
     expect(state.exerciseIndex).toBe(2);
+    expect(state.screen).toBe('active');
 
-    // Fail dead hangs set 1
-    while (state.screen === 'active') {
-      state = workoutReducer(state, { type: 'TIMER_TICK' });
-    }
-    // Timer expired → feedback
-    state = reduce(state, { type: 'ADVANCE_FEEDBACK', payload: { completed: false } });
-    state = reduce(state, { type: 'SUBMIT_FEEDBACK', payload: { value: 0 } });
+    // Fail dead hangs set 1 by ending immediately (0 elapsed = failed)
+    state = workoutReducer(state, { type: 'END_DURATION_SET' });
     expect(state.screen).toBe('earlyStop');
 
     // Accept → workout complete (no more exercises)

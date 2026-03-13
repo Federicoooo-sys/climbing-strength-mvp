@@ -1,13 +1,22 @@
-import type { WorkoutHistory, WorkoutSession, SetResult } from '../types/workout';
+import type { WorkoutHistory, WorkoutSession, SetResult, ExerciseType } from '../types/workout';
 
 // ── Types ────────────────────────────────────────────────────────
+
+export interface DurationSetDetail {
+  readonly target: number;
+  readonly actual: number;
+}
 
 export interface ExerciseSummary {
   readonly exerciseId: string;
   readonly exerciseName: string;
+  readonly exerciseType: ExerciseType;
   readonly completionCount: number;   // how many sessions included this exercise
   readonly totalSetsCompleted: number; // cumulative sets where completed === true
   readonly totalSetsAttempted: number; // cumulative sets attempted (all results)
+  readonly totalActual: number;       // sum of actual values across all sets
+  readonly totalTarget: number;       // sum of target values across all sets
+  readonly durationSets: readonly DurationSetDetail[]; // per-set detail for duration exercises
 }
 
 // ── Core summary logic ──────────────────────────────────────────
@@ -54,17 +63,47 @@ function countAttemptedSets(
   );
 }
 
+function collectDurationSets(
+  sessions: readonly WorkoutSession[],
+  exerciseId: string,
+): DurationSetDetail[] {
+  const details: DurationSetDetail[] = [];
+  for (const s of sessions) {
+    for (const r of s.results) {
+      if (r.exerciseId === exerciseId) {
+        details.push({ target: r.target, actual: r.actual });
+      }
+    }
+  }
+  return details;
+}
+
+function sumField(
+  sessions: readonly WorkoutSession[],
+  exerciseId: string,
+  field: 'actual' | 'target',
+): number {
+  return sessions.reduce(
+    (sum, s) =>
+      sum +
+      s.results
+        .filter((r) => r.exerciseId === exerciseId)
+        .reduce((acc, r) => acc + r[field], 0),
+    0,
+  );
+}
+
 /**
  * Build cumulative summary grouped by exercise type.
  *
  * @param history - The full workout history from storage
- * @param exerciseNames - Map of exerciseId → display name. This keeps the
+ * @param exerciseInfo - Map of exerciseId → { name, type }. This keeps the
  *   summary logic decoupled from the exercise definitions, so it works
  *   when the exercise library grows.
  */
 export function buildSummary(
   history: WorkoutHistory,
-  exerciseNames: ReadonlyMap<string, string>,
+  exerciseInfo: ReadonlyMap<string, { name: string; type: ExerciseType }>,
 ): ExerciseSummary[] {
   // Collect every unique exerciseId that appears in any session
   const seenIds = new Set<string>();
@@ -78,12 +117,19 @@ export function buildSummary(
   const summaries: ExerciseSummary[] = [];
 
   for (const id of seenIds) {
+    const info = exerciseInfo.get(id);
     summaries.push({
       exerciseId: id,
-      exerciseName: exerciseNames.get(id) ?? id,
+      exerciseName: info?.name ?? id,
+      exerciseType: info?.type ?? 'reps',
       completionCount: countSessionsWithExercise(history.sessions, id),
       totalSetsCompleted: countCompletedSets(history.sessions, id),
       totalSetsAttempted: countAttemptedSets(history.sessions, id),
+      totalActual: sumField(history.sessions, id, 'actual'),
+      totalTarget: sumField(history.sessions, id, 'target'),
+      durationSets: (info?.type ?? 'reps') === 'duration'
+        ? collectDurationSets(history.sessions, id)
+        : [],
     });
   }
 

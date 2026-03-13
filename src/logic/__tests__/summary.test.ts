@@ -31,10 +31,10 @@ function makeSession(results: SetResult[], overrides: Partial<WorkoutSession> = 
   };
 }
 
-const NAMES = new Map([
-  ['pull-ups', 'Pull-ups'],
-  ['ring-rows', 'Ring Rows'],
-  ['dead-hangs', 'Dead Hangs'],
+const INFO = new Map([
+  ['pull-ups', { name: 'Pull-ups', type: 'reps' as const }],
+  ['ring-rows', { name: 'Ring Rows', type: 'reps' as const }],
+  ['dead-hangs', { name: 'Dead Hangs', type: 'duration' as const }],
 ]);
 
 // ── Tests ────────────────────────────────────────────────────────
@@ -42,7 +42,7 @@ const NAMES = new Map([
 describe('buildSummary', () => {
   it('returns empty array when there are no sessions', () => {
     const history: WorkoutHistory = { version: 1, sessions: [] };
-    expect(buildSummary(history, NAMES)).toEqual([]);
+    expect(buildSummary(history, INFO)).toEqual([]);
   });
 
   it('counts one session with one exercise', () => {
@@ -56,7 +56,7 @@ describe('buildSummary', () => {
       ],
     };
 
-    const result = buildSummary(history, NAMES);
+    const result = buildSummary(history, INFO);
     expect(result).toHaveLength(1);
     expect(result[0].exerciseId).toBe('pull-ups');
     expect(result[0].exerciseName).toBe('Pull-ups');
@@ -84,7 +84,7 @@ describe('buildSummary', () => {
       sessions: [session1, session2, session3],
     };
 
-    const result = buildSummary(history, NAMES);
+    const result = buildSummary(history, INFO);
     expect(result[0].completionCount).toBe(3);
   });
 
@@ -100,7 +100,7 @@ describe('buildSummary', () => {
       ],
     };
 
-    const result = buildSummary(history, NAMES);
+    const result = buildSummary(history, INFO);
     expect(result).toHaveLength(3);
 
     const pullUps = result.find((r) => r.exerciseId === 'pull-ups');
@@ -125,7 +125,7 @@ describe('buildSummary', () => {
       ],
     };
 
-    const result = buildSummary(history, NAMES);
+    const result = buildSummary(history, INFO);
     expect(result[0].completionCount).toBe(1);
     expect(result[0].totalSetsCompleted).toBe(0);
     expect(result[0].totalSetsAttempted).toBe(1);
@@ -139,7 +139,7 @@ describe('buildSummary', () => {
       ],
     };
 
-    const result = buildSummary(history, NAMES);
+    const result = buildSummary(history, INFO);
     expect(result[0].exerciseName).toBe('unknown-exercise');
   });
 
@@ -161,7 +161,7 @@ describe('buildSummary', () => {
       sessions: [session1, session2],
     };
 
-    const result = buildSummary(history, NAMES);
+    const result = buildSummary(history, INFO);
     expect(result[0].completionCount).toBe(2);
     expect(result[0].totalSetsCompleted).toBe(5); // 2 + 3
     expect(result[0].totalSetsAttempted).toBe(6); // 3 + 3

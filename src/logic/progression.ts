@@ -21,7 +21,9 @@ export function computeNextTarget(
   intensity: number | null,
 ): number {
   if (!completed) {
-    return actual;
+    // Duration exercises keep the planned target on incomplete sets.
+    // Rep exercises drop to the actual count achieved.
+    return exerciseType === 'duration' ? currentTarget : actual;
   }
 
   if (intensity !== null && intensity < 5) {

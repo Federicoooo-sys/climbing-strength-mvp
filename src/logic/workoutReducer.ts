@@ -57,19 +57,21 @@ function buildCompletedSession(state: WorkoutState, results: SetResult[]): Worko
 
 // ── State transition helpers ─────────────────────────────────────
 
-function enterFeedback(state: WorkoutState): WorkoutState {
+function enterFeedback(state: WorkoutState, autoComplete?: boolean): WorkoutState {
   const exercise = currentExercise(state);
+  const target = state.currentTargets[state.exerciseIndex];
   return {
     ...state,
     screen: 'feedback',
     timer: { secondsRemaining: 0, isRunning: false },
     pausedAt: null,
-    feedbackStep: 'completed',
+    feedbackStep: autoComplete ? 'intensity' : 'completed',
     currentSetResult: {
       exerciseId: exercise.id,
       exerciseIndex: state.exerciseIndex,
       setIndex: state.setIndex,
-      target: state.currentTargets[state.exerciseIndex],
+      target,
+      ...(autoComplete ? { completed: true, actual: target } : {}),
     },
     lastSavedAt: Date.now(),
   };
@@ -118,7 +120,10 @@ function handleTimerExpire(state: WorkoutState): WorkoutState {
   const withSignal = { ...state, audioSignal: state.audioSignal + 1 };
   switch (state.screen) {
     case 'countdown': return enterActive(withSignal);
-    case 'active':    return enterFeedback(withSignal);
+    case 'active': {
+      const exercise = currentExercise(withSignal);
+      return enterFeedback(withSignal, exercise.type === 'duration');
+    }
     case 'rest':      return enterActive(withSignal);
     default:          return state;
   }
@@ -132,9 +137,72 @@ function handleTimerExpire(state: WorkoutState): WorkoutState {
 function handleTimerExpireOnResume(state: WorkoutState): WorkoutState {
   switch (state.screen) {
     case 'countdown': return enterActive(state);
-    case 'active':    return enterFeedback(state);
+    case 'active': {
+      const exercise = currentExercise(state);
+      return enterFeedback(state, exercise.type === 'duration');
+    }
     case 'rest':      return enterActive(state);
     default:          return state;
+  }
+}
+
+// ── Post-result routing (shared by SUBMIT_FEEDBACK & END_DURATION_SET) ──
+
+function routeAfterSetResult(state: WorkoutState, result: SetResult): WorkoutState {
+  const now = Date.now();
+  const exercise = currentExercise(state);
+  const outcome = resolvePostFeedback(
+    result,
+    exercise,
+    state.exerciseIndex,
+    state.setIndex,
+    exercise.sets,
+    state.template.exercises.length,
+    state.failedSetsInExercise,
+    state.currentTargets[state.exerciseIndex],
+  );
+
+  const newResults = [...state.setResults, result];
+  const newTargets = [...state.currentTargets];
+  newTargets[state.exerciseIndex] = outcome.nextTarget;
+
+  switch (outcome.route) {
+    case 'early_stop':
+      return {
+        ...state,
+        screen: 'earlyStop',
+        setResults: newResults,
+        currentTargets: newTargets,
+        failedSetsInExercise: outcome.failedSetsInExercise,
+        currentSetResult: null,
+        timer: { secondsRemaining: 0, isRunning: false },
+        lastSavedAt: now,
+      };
+
+    case 'workout_complete':
+      return enterCongrats(
+        { ...state, setResults: newResults, currentTargets: newTargets },
+        newResults,
+      );
+
+    case 'next_set':
+      return enterRest(
+        { ...state, setResults: newResults, currentTargets: newTargets, setIndex: outcome.setIndex },
+        outcome.restDuration,
+      );
+
+    case 'next_exercise':
+      return enterRest(
+        {
+          ...state,
+          setResults: newResults,
+          currentTargets: newTargets,
+          exerciseIndex: outcome.exerciseIndex,
+          setIndex: 0,
+          failedSetsInExercise: 0,
+        },
+        outcome.restDuration,
+      );
   }
 }
 
@@ -277,7 +345,6 @@ export function workoutReducer(
       const partial = state.currentSetResult;
       if (!partial) return state;
 
-      // Build the full SetResult via pure function
       const result = buildSetResult(
         {
           exerciseId: partial.exerciseId!,
@@ -292,64 +359,31 @@ export function workoutReducer(
         now,
       );
 
-      // Resolve what happens next via pure function
+      return routeAfterSetResult(state, result);
+    }
+
+    // ── User ends a duration set early ───────────────────────
+    case 'END_DURATION_SET': {
+      if (state.screen !== 'active') return state;
       const exercise = currentExercise(state);
-      const outcome = resolvePostFeedback(
-        result,
-        exercise,
-        state.exerciseIndex,
-        state.setIndex,
-        exercise.sets,
-        state.template.exercises.length,
-        state.failedSetsInExercise,
-        state.currentTargets[state.exerciseIndex],
-      );
+      if (exercise.type !== 'duration') return state;
 
-      // Append result and apply progression
-      const newResults = [...state.setResults, result];
-      const newTargets = [...state.currentTargets];
-      newTargets[state.exerciseIndex] = outcome.nextTarget;
+      const target = state.currentTargets[state.exerciseIndex];
+      const elapsed = target - state.timer.secondsRemaining;
 
-      // Map outcome to state
-      switch (outcome.route) {
-        case 'early_stop':
-          return {
-            ...state,
-            screen: 'earlyStop',
-            setResults: newResults,
-            currentTargets: newTargets,
-            failedSetsInExercise: outcome.failedSetsInExercise,
-            currentSetResult: null,
-            timer: { secondsRemaining: 0, isRunning: false },
-            lastSavedAt: now,
-          };
+      const result: SetResult = {
+        exerciseId: exercise.id,
+        exerciseIndex: state.exerciseIndex,
+        setIndex: state.setIndex,
+        target,
+        completed: elapsed >= target,
+        actual: elapsed,
+        intensity: null,
+        failed: elapsed === 0,
+        timestamp: now,
+      };
 
-        case 'workout_complete':
-          return enterCongrats(
-            { ...state, setResults: newResults, currentTargets: newTargets },
-            newResults,
-          );
-
-        case 'next_set':
-          return enterRest(
-            { ...state, setResults: newResults, currentTargets: newTargets, setIndex: outcome.setIndex },
-            outcome.restDuration,
-          );
-
-        case 'next_exercise':
-          return enterRest(
-            {
-              ...state,
-              setResults: newResults,
-              currentTargets: newTargets,
-              exerciseIndex: outcome.exerciseIndex,
-              setIndex: 0,
-              failedSetsInExercise: 0,
-            },
-            outcome.restDuration,
-          );
-      }
-      break;
+      return routeAfterSetResult(state, result);
     }
 
     // ── Rest skip (−15s per tap) ───────────────────────────────

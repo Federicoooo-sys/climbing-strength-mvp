@@ -111,6 +111,7 @@ export type WorkoutAction =
   | { type: 'RESUME_WORKOUT'; payload: { savedState: WorkoutState; now: number } }
   | { type: 'TIMER_TICK' }
   | { type: 'COMPLETE_SET' }
+  | { type: 'END_DURATION_SET' }
   | { type: 'ADVANCE_FEEDBACK'; payload: { completed?: boolean; actual?: number } }
   | { type: 'SUBMIT_FEEDBACK'; payload: { value: number } }
   | { type: 'SKIP_REST' }
