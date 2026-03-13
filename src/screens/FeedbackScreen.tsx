@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useWorkout } from '../hooks/useWorkout';
 import { ProgressBar } from '../components/ProgressBar';
-import { currentExercise, totalWorkoutSets, completedWorkoutSets } from '../logic/workoutReducer';
+import { currentExercise, totalWorkoutSets, completedWorkoutSets, exerciseUnit } from '../logic/workoutSelectors';
 
 export function FeedbackScreen() {
   const { state, dispatch } = useWorkout();
   const exercise = currentExercise(state);
   const target = state.currentSetResult?.target ?? 0;
-  const unit = exercise.type === 'reps' ? 'reps' : 'seconds';
+  const unit = exerciseUnit(exercise.type, 'long');
 
   return (
     <div>

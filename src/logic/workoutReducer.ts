@@ -12,6 +12,7 @@ import {
   resolveEarlyStopAccept,
   resolveEarlyStopDecline,
 } from './progression';
+import { currentExercise } from './workoutSelectors';
 
 // ── Initial state factory ────────────────────────────────────────
 
@@ -38,18 +39,6 @@ export function createInitialState(template: WorkoutTemplate): WorkoutState {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
-
-function currentExercise(state: WorkoutState) {
-  return state.template.exercises[state.exerciseIndex];
-}
-
-function isLastSetOfExercise(state: WorkoutState): boolean {
-  return state.setIndex >= currentExercise(state).sets - 1;
-}
-
-function isLastExercise(state: WorkoutState): boolean {
-  return state.exerciseIndex >= state.template.exercises.length - 1;
-}
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10);
@@ -464,15 +453,3 @@ export function workoutReducer(
   }
 }
 
-/** Total number of sets across all exercises in the workout. */
-function totalWorkoutSets(state: WorkoutState): number {
-  return state.template.exercises.reduce((sum, e) => sum + e.sets, 0);
-}
-
-/** Number of sets completed so far (based on recorded results). */
-function completedWorkoutSets(state: WorkoutState): number {
-  return state.setResults.length;
-}
-
-// Re-export helpers for use in hooks/screens
-export { currentExercise, isLastSetOfExercise, isLastExercise, totalWorkoutSets, completedWorkoutSets };

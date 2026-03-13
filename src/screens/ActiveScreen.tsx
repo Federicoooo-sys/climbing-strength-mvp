@@ -1,13 +1,14 @@
 import { useWorkout } from '../hooks/useWorkout';
 import { TimerDisplay } from '../components/TimerDisplay';
 import { ProgressBar } from '../components/ProgressBar';
-import { currentExercise, totalWorkoutSets, completedWorkoutSets } from '../logic/workoutReducer';
+import { PauseResumeButton } from '../components/PauseResumeButton';
+import { currentExercise, totalWorkoutSets, completedWorkoutSets, exerciseUnit } from '../logic/workoutSelectors';
 
 export function ActiveScreen() {
   const { state, dispatch } = useWorkout();
   const exercise = currentExercise(state);
   const target = state.currentTargets[state.exerciseIndex];
-  const unit = exercise.type === 'reps' ? 'reps' : 'sec';
+  const unit = exerciseUnit(exercise.type);
   const isUrgent = state.timer.secondsRemaining <= 5 && state.timer.secondsRemaining > 0;
   const timerLabel = exercise.type === 'reps' ? 'Time cap' : 'Hold for';
 
@@ -40,19 +41,7 @@ export function ActiveScreen() {
             </button>
           )}
 
-          {state.pausedAt ? (
-            <button onClick={() => dispatch({ type: 'UNPAUSE' })}>
-              Resume
-            </button>
-          ) : (
-            <button
-              onClick={() =>
-                dispatch({ type: 'PAUSE', payload: { now: Date.now() } })
-              }
-            >
-              Pause
-            </button>
-          )}
+          <PauseResumeButton />
         </div>
       </div>
     </div>

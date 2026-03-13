@@ -1,13 +1,13 @@
 import { useWorkout } from '../hooks/useWorkout';
 import { TimerDisplay } from '../components/TimerDisplay';
 import { ProgressBar } from '../components/ProgressBar';
-import { currentExercise, totalWorkoutSets, completedWorkoutSets } from '../logic/workoutReducer';
+import { currentExercise, totalWorkoutSets, completedWorkoutSets, exerciseUnit } from '../logic/workoutSelectors';
 
 export function CountdownScreen() {
   const { state } = useWorkout();
   const exercise = currentExercise(state);
   const target = state.currentTargets[state.exerciseIndex];
-  const unit = exercise.type === 'reps' ? 'reps' : 'sec';
+  const unit = exerciseUnit(exercise.type);
 
   return (
     <div>

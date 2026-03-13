@@ -1,7 +1,8 @@
 import { useWorkout } from '../hooks/useWorkout';
 import { TimerDisplay } from '../components/TimerDisplay';
 import { ProgressBar } from '../components/ProgressBar';
-import { currentExercise, totalWorkoutSets, completedWorkoutSets } from '../logic/workoutReducer';
+import { PauseResumeButton } from '../components/PauseResumeButton';
+import { currentExercise, totalWorkoutSets, completedWorkoutSets } from '../logic/workoutSelectors';
 
 export function RestScreen() {
   const { state, dispatch } = useWorkout();
@@ -25,19 +26,7 @@ export function RestScreen() {
             Skip (-15s)
           </button>
 
-          {state.pausedAt ? (
-            <button onClick={() => dispatch({ type: 'UNPAUSE' })}>
-              Resume
-            </button>
-          ) : (
-            <button
-              onClick={() =>
-                dispatch({ type: 'PAUSE', payload: { now: Date.now() } })
-              }
-            >
-              Pause
-            </button>
-          )}
+          <PauseResumeButton />
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { WorkoutState } from '../types/workout';
-import type { StorageAdapter } from '../storage/storageAdapter';
+import type { StorageAdapter } from '../types/workout';
 
 /**
  * Persists workout state to storage on every meaningful change.

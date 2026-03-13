@@ -1,6 +1,6 @@
 import { useWorkout } from '../hooks/useWorkout';
 import { ProgressBar } from '../components/ProgressBar';
-import { currentExercise, totalWorkoutSets, completedWorkoutSets } from '../logic/workoutReducer';
+import { currentExercise, totalWorkoutSets, completedWorkoutSets } from '../logic/workoutSelectors';
 import { shouldRecommendEarlyStop } from '../logic/progression';
 
 export function EarlyStopScreen() {
