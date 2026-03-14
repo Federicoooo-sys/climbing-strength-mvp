@@ -1,4 +1,10 @@
 import { useWorkout } from '../hooks/useWorkout';
+import {
+  ScreenShell,
+  PageTitle,
+  PageSubtitle,
+  PrimaryButton,
+} from '../components/ui/Primitives';
 
 export function CongratsScreen() {
   const { state, dispatch } = useWorkout();
@@ -8,22 +14,24 @@ export function CongratsScreen() {
   const skippedExercises = state.earlyStoppedExercises.length;
 
   return (
-    <div style={{ textAlign: 'center', paddingTop: 48 }}>
-      <h1>Workout Complete!</h1>
+    <ScreenShell>
+      <div className="flex flex-col items-center justify-center gap-6 flex-1 text-center">
+        <PageTitle>Workout Complete!</PageTitle>
 
-      <p style={{ fontSize: 18, margin: '24px 0' }}>
-        You finished {completedSets} of {totalSets} sets.
-        {skippedExercises > 0 && (
-          <span> ({skippedExercises} exercise{skippedExercises > 1 ? 's' : ''} stopped early)</span>
-        )}
-      </p>
+        <PageSubtitle>
+          You finished {completedSets} of {totalSets} sets.
+          {skippedExercises > 0 && (
+            <span> ({skippedExercises} exercise{skippedExercises > 1 ? 's' : ''} stopped early)</span>
+          )}
+        </PageSubtitle>
 
-      <button
-        onClick={() => dispatch({ type: 'VIEW_SUMMARY' })}
-        style={{ fontSize: 18, padding: '12px 32px', marginTop: 16 }}
-      >
-        View Summary
-      </button>
-    </div>
+        <div className="w-full mt-8">
+          <PrimaryButton
+            label="View Summary"
+            onClick={() => dispatch({ type: 'VIEW_SUMMARY' })}
+          />
+        </div>
+      </div>
+    </ScreenShell>
   );
 }

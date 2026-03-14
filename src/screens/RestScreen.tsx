@@ -1,34 +1,49 @@
 import { useWorkout } from '../hooks/useWorkout';
-import { TimerDisplay } from '../components/TimerDisplay';
 import { ProgressBar } from '../components/ProgressBar';
 import { PauseResumeButton } from '../components/PauseResumeButton';
 import { currentExercise, totalWorkoutSets, completedWorkoutSets } from '../logic/workoutSelectors';
+import {
+  ScreenShell,
+  ScreenLabel,
+  BigDisplay,
+  ContextLine,
+  SecondaryButton,
+} from '../components/ui/Primitives';
+import { formatTimer } from '../logic/timer';
 
 export function RestScreen() {
   const { state, dispatch } = useWorkout();
   const exercise = currentExercise(state);
 
   return (
-    <div>
-      <ProgressBar current={completedWorkoutSets(state)} total={totalWorkoutSets(state)} />
+    <ScreenShell
+      progressBar={
+        <ProgressBar
+          current={completedWorkoutSets(state)}
+          total={totalWorkoutSets(state)}
+        />
+      }
+    >
+      <div className="flex flex-col items-center gap-6 flex-1">
+        <ScreenLabel>Rest</ScreenLabel>
 
-      <div style={{ textAlign: 'center', paddingTop: 24 }}>
-        <h2>Rest</h2>
+        <BigDisplay
+          value={formatTimer(state.timer.secondsRemaining)}
+          label="Rest remaining"
+        />
 
-        <div style={{ margin: '24px 0' }}>
-          <TimerDisplay seconds={state.timer.secondsRemaining} label="Rest remaining" />
-        </div>
+        <ContextLine>
+          Up next: {exercise.name} — Set {state.setIndex + 1}
+        </ContextLine>
 
-        <p>Up next: {exercise.name} — Set {state.setIndex + 1}</p>
-
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-          <button onClick={() => dispatch({ type: 'SKIP_REST' })}>
-            Skip (-15s)
-          </button>
-
+        <div className="flex flex-col gap-3 w-full mt-auto">
+          <SecondaryButton
+            label="Skip (-15s)"
+            onClick={() => dispatch({ type: 'SKIP_REST' })}
+          />
           <PauseResumeButton />
         </div>
       </div>
-    </div>
+    </ScreenShell>
   );
 }

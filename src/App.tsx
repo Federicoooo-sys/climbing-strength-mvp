@@ -36,7 +36,7 @@ function WorkoutApp() {
 
   return (
     <WorkoutContext value={{ state, dispatch, savedSession, storage }}>
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: 16 }}>
+      <div className="max-w-[480px] mx-auto min-h-screen">
         {screenComponent()}
       </div>
     </WorkoutContext>

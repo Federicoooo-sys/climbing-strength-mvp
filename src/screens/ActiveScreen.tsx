@@ -1,8 +1,17 @@
 import { useWorkout } from '../hooks/useWorkout';
-import { TimerDisplay } from '../components/TimerDisplay';
 import { ProgressBar } from '../components/ProgressBar';
 import { PauseResumeButton } from '../components/PauseResumeButton';
 import { currentExercise, totalWorkoutSets, completedWorkoutSets, exerciseUnit } from '../logic/workoutSelectors';
+import {
+  ScreenShell,
+  ExerciseName,
+  ContextLine,
+  TargetBadge,
+  BigDisplay,
+  PrimaryButton,
+  SecondaryButton,
+} from '../components/ui/Primitives';
+import { formatTimer } from '../logic/timer';
 
 export function ActiveScreen() {
   const { state, dispatch } = useWorkout();
@@ -13,42 +22,45 @@ export function ActiveScreen() {
   const timerLabel = exercise.type === 'reps' ? 'Time cap' : 'Hold for';
 
   return (
-    <div>
-      <ProgressBar current={completedWorkoutSets(state)} total={totalWorkoutSets(state)} />
-
-      <div style={{ textAlign: 'center', paddingTop: 24 }}>
-        <h2 style={{ marginBottom: 4 }}>{exercise.name}</h2>
-        <p style={{ opacity: 0.7, marginTop: 0 }}>
-          Set {state.setIndex + 1} of {exercise.sets}
-        </p>
-
-        <p style={{ fontSize: '1.25rem', margin: '16px 0' }}>
-          Target: {target} {unit}
-        </p>
-
-        <div style={{ margin: '24px 0' }}>
-          <TimerDisplay
-            seconds={state.timer.secondsRemaining}
-            label={timerLabel}
-            urgent={isUrgent}
-          />
+    <ScreenShell
+      progressBar={
+        <ProgressBar
+          current={completedWorkoutSets(state)}
+          total={totalWorkoutSets(state)}
+        />
+      }
+    >
+      <div className="flex flex-col items-center gap-6 flex-1">
+        <div className="flex flex-col items-center gap-2">
+          <ExerciseName>{exercise.name}</ExerciseName>
+          <ContextLine>
+            Set {state.setIndex + 1} of {exercise.sets}
+          </ContextLine>
+          <TargetBadge label={`Target: ${target} ${unit}`} />
         </div>
 
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <BigDisplay
+          value={formatTimer(state.timer.secondsRemaining)}
+          label={timerLabel}
+          urgent={isUrgent}
+        />
+
+        <div className="flex flex-col gap-3 w-full mt-auto">
           {exercise.type === 'reps' && (
-            <button onClick={() => dispatch({ type: 'COMPLETE_SET' })}>
-              Done
-            </button>
+            <PrimaryButton
+              label="Done"
+              onClick={() => dispatch({ type: 'COMPLETE_SET' })}
+            />
           )}
           {exercise.type === 'duration' && (
-            <button onClick={() => dispatch({ type: 'END_DURATION_SET' })}>
-              End this set
-            </button>
+            <SecondaryButton
+              label="End this set"
+              onClick={() => dispatch({ type: 'END_DURATION_SET' })}
+            />
           )}
-
           <PauseResumeButton />
         </div>
       </div>
-    </div>
+    </ScreenShell>
   );
 }

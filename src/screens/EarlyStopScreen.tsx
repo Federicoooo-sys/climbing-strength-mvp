@@ -2,6 +2,13 @@ import { useWorkout } from '../hooks/useWorkout';
 import { ProgressBar } from '../components/ProgressBar';
 import { currentExercise, totalWorkoutSets, completedWorkoutSets } from '../logic/workoutSelectors';
 import { shouldRecommendEarlyStop } from '../logic/progression';
+import {
+  ScreenShell,
+  QuestionText,
+  ContextLine,
+  PrimaryButton,
+  SecondaryButton,
+} from '../components/ui/Primitives';
 
 export function EarlyStopScreen() {
   const { state, dispatch } = useWorkout();
@@ -10,38 +17,45 @@ export function EarlyStopScreen() {
   const remainingSets = exercise.sets - state.setIndex - 1;
 
   return (
-    <div>
-      <ProgressBar current={completedWorkoutSets(state)} total={totalWorkoutSets(state)} />
-
-      <div style={{ textAlign: 'center', paddingTop: 24 }}>
+    <ScreenShell
+      progressBar={
+        <ProgressBar
+          current={completedWorkoutSets(state)}
+          total={totalWorkoutSets(state)}
+        />
+      }
+    >
+      <div className="flex flex-col items-center gap-6 flex-1">
         {isRecommended ? (
           <>
-            <h2>We recommend stopping {exercise.name}</h2>
-            <p>
+            <QuestionText>We recommend stopping {exercise.name}</QuestionText>
+            <ContextLine>
               You've had {state.failedSetsInExercise} failed sets in a row.
               Skipping the remaining {remainingSets} {remainingSets === 1 ? 'set' : 'sets'} may
               help avoid injury.
-            </p>
+            </ContextLine>
           </>
         ) : (
           <>
-            <h2>Stop {exercise.name} early?</h2>
-            <p>
+            <QuestionText>Stop {exercise.name} early?</QuestionText>
+            <ContextLine>
               You can skip the remaining {remainingSets} {remainingSets === 1 ? 'set' : 'sets'} and
               move to the next exercise.
-            </p>
+            </ContextLine>
           </>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 24 }}>
-          <button onClick={() => dispatch({ type: 'ACCEPT_EARLY_STOP' })}>
-            Skip remaining sets
-          </button>
-          <button onClick={() => dispatch({ type: 'DECLINE_EARLY_STOP' })}>
-            Keep going
-          </button>
+        <div className="flex flex-col gap-3 w-full mt-auto">
+          <PrimaryButton
+            label="Skip remaining sets"
+            onClick={() => dispatch({ type: 'ACCEPT_EARLY_STOP' })}
+          />
+          <SecondaryButton
+            label="Keep going"
+            onClick={() => dispatch({ type: 'DECLINE_EARLY_STOP' })}
+          />
         </div>
       </div>
-    </div>
+    </ScreenShell>
   );
 }

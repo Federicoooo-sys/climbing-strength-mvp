@@ -1,6 +1,19 @@
 import type { ExerciseDefinition } from '../types/workout';
 
 /**
+ * Format seconds into a display string.
+ * Shows MM:SS when >= 60, otherwise just the number.
+ */
+export function formatTimer(seconds: number): string {
+  const clamped = Math.max(0, seconds);
+  const mins = Math.floor(clamped / 60);
+  const secs = clamped % 60;
+  return mins > 0
+    ? `${mins}:${secs.toString().padStart(2, '0')}`
+    : `${secs}`;
+}
+
+/**
  * How long the active set timer should run.
  * - Reps: use timeCap (e.g. 60s)
  * - Duration: use the current target (e.g. 60s for dead hangs)

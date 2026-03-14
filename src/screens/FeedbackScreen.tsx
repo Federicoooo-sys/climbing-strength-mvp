@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { useWorkout } from '../hooks/useWorkout';
 import { ProgressBar } from '../components/ProgressBar';
 import { currentExercise, totalWorkoutSets, completedWorkoutSets, exerciseUnit } from '../logic/workoutSelectors';
+import {
+  ScreenShell,
+  ContextLine,
+  QuestionText,
+  BigDisplay,
+  PrimaryButton,
+  SecondaryButton,
+} from '../components/ui/Primitives';
 
 export function FeedbackScreen() {
   const { state, dispatch } = useWorkout();
@@ -10,36 +18,39 @@ export function FeedbackScreen() {
   const unit = exerciseUnit(exercise.type, 'long');
 
   return (
-    <div>
-      <ProgressBar current={completedWorkoutSets(state)} total={totalWorkoutSets(state)} />
-
-      <div style={{ textAlign: 'center', paddingTop: 24 }}>
-        <p style={{ opacity: 0.7, marginBottom: 0 }}>
+    <ScreenShell
+      progressBar={
+        <ProgressBar
+          current={completedWorkoutSets(state)}
+          total={totalWorkoutSets(state)}
+        />
+      }
+    >
+      <div className="flex flex-col items-center gap-6 flex-1">
+        <ContextLine>
           {exercise.name} — Set {state.setIndex + 1}
-        </p>
+        </ContextLine>
 
         {state.feedbackStep === 'completed' && (
-          <>
-            <h2 style={{ marginBottom: 24 }}>
+          <div className="flex flex-col items-center gap-6 flex-1 w-full">
+            <QuestionText>
               Did you complete all {target} {unit}?
-            </h2>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button
+            </QuestionText>
+            <div className="flex flex-col gap-3 w-full mt-auto">
+              <PrimaryButton
+                label="Yes"
                 onClick={() =>
                   dispatch({ type: 'ADVANCE_FEEDBACK', payload: { completed: true } })
                 }
-              >
-                Yes
-              </button>
-              <button
+              />
+              <SecondaryButton
+                label="No"
                 onClick={() =>
                   dispatch({ type: 'ADVANCE_FEEDBACK', payload: { completed: false } })
                 }
-              >
-                No
-              </button>
+              />
             </div>
-          </>
+          </div>
         )}
 
         {state.feedbackStep === 'actual-count' && (
@@ -48,67 +59,88 @@ export function FeedbackScreen() {
 
         {state.feedbackStep === 'intensity' && <IntensityInput />}
       </div>
-    </div>
+    </ScreenShell>
   );
 }
 
-// ── Actual count sub-step ────────────────────────────────────────
+// ── Actual count sub-step ────────────────────────────────
 
 function ActualCountInput({ target, unit }: { target: number; unit: string }) {
   const { dispatch } = useWorkout();
   const [value, setValue] = useState(0);
-
   const max = target - 1;
 
   return (
-    <>
-      <h2>How many {unit} did you complete?</h2>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, margin: '16px 0' }}>
+    <div className="flex flex-col items-center gap-6 flex-1 w-full">
+      <QuestionText>How many {unit} did you complete?</QuestionText>
+
+      <div className="flex items-center justify-center gap-6">
         <button
           onClick={() => setValue((v) => Math.max(0, v - 1))}
           disabled={value <= 0}
+          className="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-700 text-xl font-bold cursor-pointer disabled:opacity-30"
         >
           −
         </button>
-        <span style={{ fontSize: '2rem', minWidth: 48, fontVariantNumeric: 'tabular-nums' }}>
+        <span className="text-5xl font-bold tabular-nums text-slate-900 min-w-[64px] text-center">
           {value}
         </span>
         <button
           onClick={() => setValue((v) => Math.min(max, v + 1))}
           disabled={value >= max}
+          className="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-700 text-xl font-bold cursor-pointer disabled:opacity-30"
         >
           +
         </button>
       </div>
-      <p style={{ opacity: 0.5, fontSize: '0.875rem' }}>0 – {max} {unit}</p>
-      <button onClick={() => dispatch({ type: 'SUBMIT_FEEDBACK', payload: { value } })}>
-        Submit
-      </button>
-    </>
+
+      <p className="text-sm text-slate-400">0 – {max} {unit}</p>
+
+      <div className="w-full mt-auto">
+        <PrimaryButton
+          label="Submit"
+          onClick={() => dispatch({ type: 'SUBMIT_FEEDBACK', payload: { value } })}
+        />
+      </div>
+    </div>
   );
 }
 
-// ── Intensity sub-step ───────────────────────────────────────────
+// ── Intensity sub-step ───────────────────────────────────
 
 function IntensityInput() {
   const { dispatch } = useWorkout();
   const [value, setValue] = useState(5);
 
   return (
-    <>
-      <h2>How hard was that?</h2>
-      <input
-        type="range"
-        min={1}
-        max={10}
-        value={value}
-        onChange={(e) => setValue(Number(e.target.value))}
-        style={{ width: '80%', maxWidth: 300 }}
-      />
-      <p style={{ fontSize: '2rem', margin: '8px 0' }}>{value} / 10</p>
-      <button onClick={() => dispatch({ type: 'SUBMIT_FEEDBACK', payload: { value } })}>
-        Submit
-      </button>
-    </>
+    <div className="flex flex-col items-center gap-6 flex-1 w-full">
+      <QuestionText>How hard was that?</QuestionText>
+
+      <BigDisplay value={`${value}`} label="Intensity" />
+
+      <div className="w-full px-4">
+        <input
+          type="range"
+          min={1}
+          max={10}
+          value={value}
+          onChange={(e) => setValue(Number(e.target.value))}
+          className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer
+            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-900
+            [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-slate-900 [&::-moz-range-thumb]:border-none"
+        />
+        <div className="flex justify-between mt-1">
+          <span className="text-xs text-slate-400">Easy</span>
+          <span className="text-xs text-slate-400">Max effort</span>
+        </div>
+      </div>
+
+      <div className="w-full mt-auto">
+        <PrimaryButton
+          label="Submit"
+          onClick={() => dispatch({ type: 'SUBMIT_FEEDBACK', payload: { value } })}
+        />
+      </div>
+    </div>
   );
 }

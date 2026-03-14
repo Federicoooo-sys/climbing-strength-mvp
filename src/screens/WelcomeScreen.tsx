@@ -1,52 +1,61 @@
 import { useWorkout } from '../hooks/useWorkout';
 import { exerciseUnit } from '../logic/workoutSelectors';
+import {
+  ScreenShell,
+  PageTitle,
+  PageSubtitle,
+  ExerciseRow,
+  PrimaryButton,
+  SecondaryButton,
+} from '../components/ui/Primitives';
 
 export function WelcomeScreen() {
   const { state, dispatch, savedSession } = useWorkout();
 
   return (
-    <div style={{ textAlign: 'center', paddingTop: 48 }}>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: 4 }}>Climbing Strength</h1>
-      <p style={{ opacity: 0.7, marginTop: 0 }}>{state.template.name}</p>
-
-      <div style={{ margin: '32px 0', textAlign: 'left' }}>
-        <p style={{ fontWeight: 600, marginBottom: 8 }}>Today's workout</p>
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-          {state.template.exercises.map((ex) => {
-            const unit = exerciseUnit(ex.type);
-            const detail = `${ex.sets} × ${ex.defaultTarget} ${unit}`;
-            return (
-              <li key={ex.id} style={{ padding: '6px 0', borderBottom: '1px solid #333' }}>
-                {ex.name} — {detail}
-              </li>
-            );
-          })}
-        </ul>
+    <ScreenShell>
+      <div className="flex flex-col gap-2">
+        <PageTitle>Climbing Strength</PageTitle>
+        <PageSubtitle>{state.template.name}</PageSubtitle>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="mt-8 mb-8">
+        <p className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
+          Today's workout
+        </p>
+        <div>
+          {state.template.exercises.map((ex) => {
+            const unit = exerciseUnit(ex.type);
+            const meta = `${ex.sets} × ${ex.defaultTarget} ${unit}`;
+            return <ExerciseRow key={ex.id} name={ex.name} meta={meta} />;
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 mt-auto">
         {savedSession ? (
           <>
-            <button
+            <PrimaryButton
+              label="Resume Workout"
               onClick={() =>
                 dispatch({
                   type: 'RESUME_WORKOUT',
                   payload: { savedState: savedSession, now: Date.now() },
                 })
               }
-            >
-              Resume Workout
-            </button>
-            <button onClick={() => dispatch({ type: 'START_WORKOUT' })}>
-              Start New Workout
-            </button>
+            />
+            <SecondaryButton
+              label="Start New Workout"
+              onClick={() => dispatch({ type: 'START_WORKOUT' })}
+            />
           </>
         ) : (
-          <button onClick={() => dispatch({ type: 'START_WORKOUT' })}>
-            Start Workout
-          </button>
+          <PrimaryButton
+            label="Start Workout"
+            onClick={() => dispatch({ type: 'START_WORKOUT' })}
+          />
         )}
       </div>
-    </div>
+    </ScreenShell>
   );
 }

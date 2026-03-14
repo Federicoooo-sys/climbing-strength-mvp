@@ -4,18 +4,19 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ current, total }: ProgressBarProps) {
-  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+  const pct = total > 0 ? Math.min(100, (current / total) * 100) : 0;
 
   return (
-    <div style={{ width: '100%', height: 4, background: '#333', borderRadius: 2 }}>
+    <div
+      className="w-full h-1 bg-slate-100 shrink-0"
+      role="progressbar"
+      aria-valuenow={Math.round(pct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+    >
       <div
-        style={{
-          width: `${pct}%`,
-          height: '100%',
-          background: '#4caf50',
-          borderRadius: 2,
-          transition: 'width 0.3s',
-        }}
+        className="h-full bg-slate-800 transition-[width] duration-500"
+        style={{ width: `${pct}%` }}
       />
     </div>
   );

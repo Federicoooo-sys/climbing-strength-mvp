@@ -1,23 +1,22 @@
 import { useWorkout } from '../hooks/useWorkout';
+import { SecondaryButton } from './ui/Primitives';
 
 export function PauseResumeButton() {
   const { state, dispatch } = useWorkout();
 
   if (state.pausedAt) {
     return (
-      <button onClick={() => dispatch({ type: 'UNPAUSE' })}>
-        Resume
-      </button>
+      <SecondaryButton
+        label="Resume"
+        onClick={() => dispatch({ type: 'UNPAUSE' })}
+      />
     );
   }
 
   return (
-    <button
-      onClick={() =>
-        dispatch({ type: 'PAUSE', payload: { now: Date.now() } })
-      }
-    >
-      Pause
-    </button>
+    <SecondaryButton
+      label="Pause"
+      onClick={() => dispatch({ type: 'PAUSE', payload: { now: Date.now() } })}
+    />
   );
 }
